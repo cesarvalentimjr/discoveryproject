@@ -6,7 +6,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 
-from sports_data_layer.analysis_service import run_temporal_hypotheses
+from sports_data_layer.analysis_service import run_seasonal_hypotheses
 from sports_data_layer.adapters.generic_mapping_adapter import GenericMappingAdapter
 from sports_data_layer.capabilities import Capability, CapabilityMatrix
 from sports_data_layer.registry import ProviderConfig, SportsDataRegistry
@@ -107,7 +107,7 @@ if st.sidebar.button("Buscar temporada e rodar hipóteses", type="primary", use_
                         break
             matches = sorted(unique_matches.values(), key=lambda match: (match.date, match.id))
             progress.empty()
-            evidence, snapshots = run_temporal_hypotheses(matches, [], discovery_fraction=0.65)
+            evidence, snapshots = run_seasonal_hypotheses(matches, discovery_fraction=0.65)
             st.session_state["matches"] = matches
             st.session_state["evidence"] = evidence
             st.session_state["snapshots"] = snapshots
@@ -120,8 +120,8 @@ if st.sidebar.button("Buscar temporada e rodar hipóteses", type="primary", use_
 
 matches = st.session_state.get("matches", [])
 evidence = st.session_state.get("evidence", [])
-validated = [item for item in evidence if item.final_status == "validated"]
-candidates = [item for item in evidence if item.final_status in {"candidate", "exploratory"}]
+validated = [item for item in evidence if item.status in {"validated", "replicated"}]
+candidates = [item for item in evidence if item.status in {"candidate", "exploratory"}]
 finished = [m for m in matches if m.is_finished]
 upcoming = [m for m in matches if not m.is_finished]
 home_wins = sum(m.home_score > m.away_score for m in finished)
@@ -161,10 +161,10 @@ else:
 st.markdown('<div class="section"><h2>Descobertas da inteligência</h2><span class="muted">Descoberta → validação futura</span></div>', unsafe_allow_html=True)
 if evidence:
     for item in validated:
-        st.markdown(f'<div class="discovery"><strong>[VALIDADO] {item.title}</strong><br><span class="muted">{item.subject} · descoberta n={item.n_discovery} · validação n={item.n_validation} · q={item.q_value if item.q_value is not None else "—"} · {item.reason}</span></div>', unsafe_allow_html=True)
-    st.dataframe(pd.DataFrame([{"Status": item.final_status, "Código": item.code, "Hipótese": item.title, "Entidade": item.subject, "N descoberta": item.n_discovery, "N validação": item.n_validation, "p": round(item.p_value, 4), "q": round(item.q_value, 4) if item.q_value is not None else None, "Motivo": item.reason} for item in evidence]), hide_index=True, width="stretch")
+        st.markdown(f'<div class="discovery"><strong>[{item.status.upper()}] {item.title}</strong><br><span class="muted">{item.subject} · {item.seasons_validated} temporada(s) validadas · {item.details}</span></div>', unsafe_allow_html=True)
+    st.dataframe(pd.DataFrame([{"Status": item.status, "Código": item.code, "Hipótese": item.title, "Entidade": item.subject, "Temporadas com descoberta": item.seasons_with_discovery, "Temporadas validadas": item.seasons_validated, "Amostra média descoberta": round(item.mean_discovery_n, 1), "Amostra média validação": round(item.mean_validation_n, 1), "p médio": round(item.mean_p_value, 4), "Detalhe": item.details} for item in evidence]), hide_index=True, width="stretch")
 else:
     st.info("As descobertas aparecerão após a coleta da temporada.")
 
 st.markdown('<div class="section"><h2>Como interpretar</h2></div>', unsafe_allow_html=True)
-st.markdown('<p class="muted">A temporada é dividida cronologicamente: 65% para descoberta e 35% para validação futura. As variáveis temporais são calculadas apenas com partidas anteriores. Um candidato não é tratado como achado robusto até reaparecer na janela posterior com o mesmo código e entidade.</p>', unsafe_allow_html=True)
+st.markdown('<p class="muted">Cada temporada é dividida pelas rodadas: 65% para descoberta e 35% para validação futura. Depois, os resultados são consolidados por hipótese e entidade entre temporadas. Um achado só é replicado quando sobrevive à validação intratemporada em pelo menos duas temporadas.</p>', unsafe_allow_html=True)

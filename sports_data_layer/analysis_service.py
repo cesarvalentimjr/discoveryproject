@@ -7,6 +7,7 @@ from .hypotheses.run_all_hypotheses import ALL_HYPOTHESES
 from .models import Match, StandingRow
 from .storage import SportsDatabase
 from .temporal_analysis import run_temporal_analysis
+from .seasonal_analysis import run_seasonal_temporal_analysis
 
 
 def run_hypotheses(matches: list[Match], standings: list[StandingRow] | None = None, alpha: float = 0.05) -> list[Discovery]:
@@ -26,6 +27,11 @@ def run_hypotheses(matches: list[Match], standings: list[StandingRow] | None = N
 def run_temporal_hypotheses(matches: list[Match], standings: list[StandingRow] | None = None, discovery_fraction: float = 0.65, alpha: float = 0.05):
     """Executa descoberta e validação em ordem cronológica, sem banco."""
     return run_temporal_analysis(matches, standings=standings, discovery_fraction=discovery_fraction, alpha=alpha)
+
+
+def run_seasonal_hypotheses(matches: list[Match], discovery_fraction: float = 0.65, alpha: float = 0.05):
+    """Divide cada temporada por rodadas e consolida evidências entre temporadas."""
+    return run_seasonal_temporal_analysis(matches, fraction=discovery_fraction, alpha=alpha)
 
 
 def ingest_and_analyze(

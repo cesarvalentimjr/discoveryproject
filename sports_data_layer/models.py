@@ -20,6 +20,7 @@ class Match:
     away_score: int | None
     competition: str = ""
     season: str = ""
+    round_number: int | None = None
 
     @property
     def is_finished(self) -> bool:

@@ -41,6 +41,7 @@ class GenericMappingAdapter:
             "away_score": ("intAwayScore", "away_score", "awayScore"),
             "date": ("dateEvent", "date", "match_date", "strTimestamp"),
             "season": ("strSeason", "season"),
+            "round": ("intRound", "round", "strRound"),
             "team_id": ("idTeam", "team_id"),
             "team_name": ("strTeam", "team_name"),
             "position": ("intRank", "position", "rank"),
@@ -78,7 +79,7 @@ class GenericMappingAdapter:
                 pass
         return None
 
-    def _record_to_match(self, record: dict, competition: str) -> Match | None:
+    def _record_to_match(self, record: dict, competition: str, round_number: int | None = None) -> Match | None:
         event_date = self._date(self._extract(record, "date"))
         home_id, away_id = self._extract(record, "home_id"), self._extract(record, "away_id")
         home_name, away_name = self._extract(record, "home_name"), self._extract(record, "away_name")
@@ -93,6 +94,7 @@ class GenericMappingAdapter:
             away_score=self._int(self._extract(record, "away_score")),
             competition=competition,
             season=str(self._extract(record, "season") or ""),
+            round_number=self._int(round_number if round_number is not None else self._extract(record, "round")),
         )
 
     def get_matches(self, start: date, end: date) -> list[Match]:
@@ -158,7 +160,7 @@ class GenericMappingAdapter:
             for record in records:
                 if not isinstance(record, dict):
                     continue
-                match = self._record_to_match(record, self._mapping.get("competition", ""))
+                match = self._record_to_match(record, self._mapping.get("competition", ""), round_number=round_number)
                 if match:
                     unique[match.id] = match
         return sorted(unique.values(), key=lambda match: (match.date, match.id))
