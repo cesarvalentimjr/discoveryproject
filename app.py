@@ -107,7 +107,7 @@ if st.sidebar.button("Buscar temporada e rodar hipóteses", type="primary", use_
                         break
             matches = sorted(unique_matches.values(), key=lambda match: (match.date, match.id))
             progress.empty()
-            evidence, snapshots = run_seasonal_hypotheses(matches, discovery_fraction=0.65)
+            evidence, snapshots = run_seasonal_hypotheses(matches, discovery_fraction=0.50)
             st.session_state["matches"] = matches
             st.session_state["evidence"] = evidence
             st.session_state["snapshots"] = snapshots
