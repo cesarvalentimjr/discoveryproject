@@ -20,14 +20,12 @@ from __future__ import annotations
 
 from ..models import Match, StandingRow
 from .base import Discovery, apply_multiple_comparisons_correction
-from .home_advantage import HomeAwayPerformance
 from .hot_cold_streak import HotColdStreak
 from .opponent_tier import OpponentTierPerformance
 from .publisher import format_batch
 from .rest_days import RestDaysImpact
 
 ALL_HYPOTHESES = [
-    HomeAwayPerformance(),
     HotColdStreak(),
     RestDaysImpact(),
     OpponentTierPerformance(),
