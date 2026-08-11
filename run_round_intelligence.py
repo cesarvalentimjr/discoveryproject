@@ -16,7 +16,7 @@ def main() -> None:
     parser.add_argument("--seasons", default="2025", help="Temporadas separadas por vírgula; exemplo: 2023,2024,2025")
     parser.add_argument("--start-round", type=int, default=1)
     parser.add_argument("--end-round", type=int, default=38)
-    parser.add_argument("--discovery-fraction", type=float, default=0.65, help="Fração cronológica usada na descoberta; o restante é validação")
+    parser.add_argument("--discovery-fraction", type=float, default=0.50, help="Fração cronológica usada na descoberta; o restante é validação")
     parser.add_argument("--output", default="temporal_evidence.json", help="Arquivo JSON para evidências e snapshots")
     args = parser.parse_args()
     if args.end_round < args.start_round:
